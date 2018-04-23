@@ -9,17 +9,17 @@
 			<accessrule kind="accessible" pattern="javafx/**"/>
 		</accessrules>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Diego/eclipse-workspace/External Libraries/poi-bin-3.17-20170915/poi-3.17/poi-3.17.jar">
+	<classpathentry kind="lib" path="C:/Users/Diego/Workspace/Java-Workspace/External/mysql-connector-java-5.1.46.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Diego/eclipse-workspace/External Libraries/unboundid-ldapsdk-4.0.5/unboundid-ldapsdk-4.0.5/unboundid-ldapsdk.jar">
+	<classpathentry kind="lib" path="C:/Users/Diego/Workspace/Java-Workspace/External/poi-3.17.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Diego/eclipse-workspace/External Libraries/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar">
+	<classpathentry kind="lib" path="C:/Users/Diego/Workspace/Java-Workspace/External/unboundid-ldapsdk.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
