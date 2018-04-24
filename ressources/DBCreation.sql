@@ -18,7 +18,7 @@ character set=utf8
 comment='Stores all Branches in MIQR, uniquely identified by branchID';
 
 #Groups
-create table groups(
+create table `groups`(
 	groupID tinyint not null auto_increment,
 	branchID tinyint,
 	groupName varchar(100),
@@ -32,21 +32,23 @@ comment='Stores groups in MIQR with reference to the branch they belong to';
 #Polls
 create table polls(
 	pollID tinyint not null auto_increment,
+	branchID tinyint,
 	pollName varchar(100) not null,
 	fxml text,
 	
+	foreign key(branchID) references branches(branchID),
 	primary key(pollID)
 )
 character set=utf8
 Comment='Stores all polls and their respective fxml code';
 
 #Users
-create table users(
+create table `users`(
 	userID tinyint not null auto_increment,
 	groupID tinyint,
 	userName varchar(100) not null,
 	
-	foreign key(groupID) references groups(groupID),
+	foreign key(groupID) references `groups`(groupID),
 	primary key(userID)
 )
 character set=utf8
@@ -57,7 +59,7 @@ create table pollsgroups(
 	groupID tinyint,
 	pollID tinyint,
 	
-	foreign key(groupID) references groups(groupID),
+	foreign key(groupID) references `groups`(groupID),
 	foreign key(pollID) references polls(pollID)
 )
 character set=utf8

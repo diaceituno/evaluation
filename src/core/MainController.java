@@ -1,11 +1,9 @@
 package core;
 
-import com.unboundid.ldap.sdk.Attribute;
-import com.unboundid.ldap.sdk.LDAPException;
-import com.unboundid.ldap.sdk.LDAPSearchException;
-import com.unboundid.ldap.sdk.SearchResultEntry;
+import java.sql.SQLException;
 
 import entities.Configuration;
+import entities.User;
 
 public class MainController {
 
@@ -21,34 +19,17 @@ public class MainController {
 			
 			config.setMySQLHost("localhost");
 			config.setMySQLPort("3306");
+			config.setMySQLUser("diego");
+			config.setMySQLPass("evaluation");
 			config.setMySQLDatabase("eval");
 			
-			LDAPControl ldap = new LDAPControl();
+			DBControl dbControl = null;
 			try {
-				ldap.connect();
-			} catch (LDAPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				ldap.login();
-			} catch (LDAPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				SearchResultEntry[] entries = ldap.searchOU(Configuration.getInstance().getLdapRoot());
-				for(SearchResultEntry entry : entries) {
-					
-					for(Attribute attribute: entry.getAttributes()) {
-						System.out.println(attribute.getName() + ": " + attribute.getValue());
-					}
-				}
-			} catch (LDAPSearchException e) {
-				// TODO Auto-generated catch block
+				dbControl = DBControl.getInstance();
+			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
 			
-			ldap.disconnect();
 	}
+	
 }
