@@ -23,24 +23,29 @@ public class DBControl {
 	
 	//BRANCHES
 	private final String GET_BRANCHES = "select * from branches";
+	private final String SAVE_BRANCH = "insert into branches values(null,";
 	private final String BRANCH_ID = "branchID";
 	private final String BRANCH_NAME = "branchName";
 	
 	//GROUPS
 	private final String GET_GROUPS = "select * from `groups` where " + BRANCH_ID + "=";
+	private final String SAVE_GROUP = "insert into `groups` values(null,";
 	private final String GROUP_ID = "groupID";
 	private final String GROUP_NAME = "groupName";
 	
 	//POLLS
 	private final String GET_POLLS = "select * from polls where " + BRANCH_ID + "=";
+	private final String SAVE_POLL = "insert into polls values(null,";
 	private final String POLL_ID = "pollID";
 	private final String POLL_NAME = "pollName";
 	private final String POLL_FXML = "fxml";
 	
 	//USERS
-	private final String GET_USERS = "select * from users where " + GROUP_ID + "=";
 	private final String USER_ID = "userID";
 	private final String USER_NAME = "userName";
+	private final String GET_USERS = "select * from users where " + GROUP_ID + "=";
+	private final String SAVE_USER = "insert into users values ";
+	private final String UPDATE_USER_GROUP = "update users set " + GROUP_ID + "=";
 	
 	//TABLES
 	private final String GET_TABLES = "select * from polltables where " + POLL_ID + "=";
@@ -52,6 +57,10 @@ public class DBControl {
 	private final String ANSWER_ID  = "answerID";
 	private final String ANSWER = "answer";
 	private final String ANSWER_VALUE = "value";
+	private final String GET_USER_ANSWERS1 = "select questionID, answerID from (select userID, groupID from users where "
+											+ GROUP_ID + "=";
+	private final String GET_USER_ANSWERS2 = ") as userView inner join useranswers on userView.userID = useranswers.userID";
+
 	
 	//QUESTIONS
 	private final String GET_QUESTIONS = "select * from tablequestions where " + TABLE_ID + "=";
@@ -62,14 +71,14 @@ public class DBControl {
 	private final String GET_INPUTS = "select * from pollinputs where " + POLL_ID + "=";
 	private final String INPUT_ID = "inputID";
 	private final String INPUT_QUESTION = "inputQuestion";
+	private final String GET_USER_INPUTS1 = "select inputID, input from(select userID from `users` where ";
+	private final String GET_USER_INPUTS2 = ") as userView inner join userinputs on userView.userID=userinputs.userID";
 	
 	//GROUPPOLLS
 	private final String GET_GROUP_POLLS = "select " + POLL_ID + " from pollsgroups where " + GROUP_ID + "="; 
 	
 	//Answers
-	private final String GET_USER_ANSWERS1 = "select questionID, answerID from (select userID, groupID from users where "
-											+ GROUP_ID + "=";
-	private final String GET_USER_ANSWERS2 = ") as userView inner join useranswers on userView.userID = useranswers.userID";
+	
 	//Singleton Pattern
 	private static DBControl dbControl = null;
 	
@@ -293,6 +302,86 @@ public class DBControl {
 		Statement statement = connection.createStatement();
 		
 		ResultSet resultSet = statement.executeQuery(query);
+		connection.close();
 		return resultSet;
+	}
+
+	public ResultSet getUserInputs(int ...groupIDs) throws SQLException {
+		String query = GET_USER_INPUTS1;
+		for(int i=0; i<groupIDs.length-1; i++) {
+			query+=GROUP_ID + "=" + groupIDs[i] + " or ";
+		}
+		query+=GROUP_ID + "=" + groupIDs[groupIDs.length-1] + GET_USER_INPUTS2;
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url, config.getMySQLUser(), config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(query);
+		connection.close();
+		return resultSet;
+	}
+	//SAVE METHODS
+	public int saveBranch(Branch branch) throws SQLException {
+		String query = SAVE_BRANCH + "'" + branch.getName() + "')";
+		System.out.println(query);
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		statement.execute(query,Statement.RETURN_GENERATED_KEYS);
+		ResultSet result = statement.getGeneratedKeys();
+		result.next();
+		connection.close();
+		return result.getInt(1);
+	}
+
+	public int saveGroup(Branch branch, Group group) throws SQLException {
+		String query = SAVE_GROUP + branch.getId() + ",'" + group.getGroupName() + "')";
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		statement.execute(query, Statement.RETURN_GENERATED_KEYS);
+		ResultSet result = statement.getGeneratedKeys();
+		result.next();
+		connection.close();
+		return result.getInt(1);
+	}
+
+	public int savePoll(Branch branch, Poll poll) throws SQLException {
+		
+		String query = SAVE_POLL + branch.getId() + ",'" + poll.getPollName() + "'," + poll.getFxml() + ")";
+		System.out.println(query);
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		statement.execute(query,Statement.RETURN_GENERATED_KEYS);
+		ResultSet resultSet = statement.getGeneratedKeys();
+		connection.close();
+		resultSet.next();
+		return resultSet.getInt(1);
+	}
+	
+	public boolean saveUsers(Group group,User...users) throws SQLException {
+		String query = SAVE_USER;
+		for(int i=0; i<users.length-1; i++) {
+			query += "(null," + group.getId() + ",'" + users[i].getUserName() + "'),";
+		}
+		query+= "(null," + group.getId() + ",'" + users[users.length-1].getUserName() + "')";
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		connection.close();
+		return !statement.execute(query);
+	}
+	
+	public boolean updateUserGroup(Group group, User...users) throws SQLException {
+		String query = UPDATE_USER_GROUP + group.getId() + " where ";
+		for(int i=0; i<users.length-1; i++) {
+			query+=USER_ID + "=" +users[i].getId() + " or ";
+		}
+		query+= USER_ID + "=" + users[users.length-1].getId();
+		System.out.println(query);
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		return !statement.execute(query);
 	}
 }

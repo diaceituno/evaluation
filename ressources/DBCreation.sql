@@ -46,7 +46,7 @@ Comment='Stores all polls and their respective fxml code';
 create table `users`(
 	userID tinyint not null auto_increment,
 	groupID tinyint,
-	userName varchar(100) not null,
+	userName varchar(100) not null unique,
 	
 	foreign key(groupID) references `groups`(groupID),
 	primary key(userID)
