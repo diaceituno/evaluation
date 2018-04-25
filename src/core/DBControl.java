@@ -7,10 +7,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import entities.Answer;
 import entities.Branch;
 import entities.Configuration;
 import entities.Group;
+import entities.Input;
 import entities.Poll;
+import entities.Question;
+import entities.Table;
 import entities.User;
 
 public class DBControl {
@@ -38,6 +42,34 @@ public class DBControl {
 	private final String USER_ID = "userID";
 	private final String USER_NAME = "userName";
 	
+	//TABLES
+	private final String GET_TABLES = "select * from polltables where " + POLL_ID + "=";
+	private final String TABLE_ID = "tableID";
+	private final String TABLE_TITLE = "tableTitle";
+	
+	//Answers
+	private final String GET_ANSWERS = "select * from tableanswers where " + TABLE_ID + "=";
+	private final String ANSWER_ID  = "answerID";
+	private final String ANSWER = "answer";
+	private final String ANSWER_VALUE = "value";
+	
+	//QUESTIONS
+	private final String GET_QUESTIONS = "select * from tablequestions where " + TABLE_ID + "=";
+	private final String QUESTION_ID = "questionID";
+	private final String QUESTION = "question";
+	
+	//INPUTS
+	private final String GET_INPUTS = "select * from pollinputs where " + POLL_ID + "=";
+	private final String INPUT_ID = "inputID";
+	private final String INPUT_QUESTION = "inputQuestion";
+	
+	//GROUPPOLLS
+	private final String GET_GROUP_POLLS = "select " + POLL_ID + " from pollsgroups where " + GROUP_ID + "="; 
+	
+	//Answers
+	private final String GET_USER_ANSWERS1 = "select questionID, answerID from (select userID, groupID from users where "
+											+ GROUP_ID + "=";
+	private final String GET_USER_ANSWERS2 = ") as userView inner join useranswers on userView.userID = useranswers.userID";
 	//Singleton Pattern
 	private static DBControl dbControl = null;
 	
@@ -105,7 +137,7 @@ public class DBControl {
 		return retList.toArray(new Group[retList.size()]);
 	}
 
-	public Poll[] getPolls(int branchID) throws SQLException {
+	public Poll[] getPollsInBranch(int branchID) throws SQLException {
 		
 		String query = GET_POLLS + branchID;
 		Configuration config = Configuration.getInstance();
@@ -126,7 +158,7 @@ public class DBControl {
 		return retList.toArray(new Poll[retList.size()]);
 	}
 	
-	public User[] getUsers(int groupID) throws SQLException {
+	public User[] getUsersInGroup(int groupID) throws SQLException {
 		
 		String query = GET_USERS + groupID;
 		Configuration config = Configuration.getInstance();
@@ -145,5 +177,122 @@ public class DBControl {
 		connection.close();
 		
 		return retList.toArray(new User[retList.size()]);
+	}
+
+	public Table[] getTablesInPoll(int pollID) throws SQLException {
+		
+		String query = GET_TABLES + pollID;
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url, config.getMySQLUser(), config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		ArrayList<Table> retList = new ArrayList<Table>();
+		
+		ResultSet resultSet = statement.executeQuery(query);
+		while(resultSet.next()) {
+			Table tmpTable = new Table();
+			tmpTable.setId(resultSet.getInt(TABLE_ID));
+			tmpTable.setPolliD(resultSet.getInt(POLL_ID));
+			tmpTable.setTitle(resultSet.getString(TABLE_TITLE));
+			retList.add(tmpTable);
+		}
+		connection.close();
+		
+		return retList.toArray(new Table[retList.size()]);
+	}
+
+	public Answer[] getTableAnswers(int tableID) throws SQLException {
+		
+		String query = GET_ANSWERS + tableID;
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url, config.getMySQLUser(), config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		ArrayList<Answer> retList = new ArrayList<Answer>();
+		
+		ResultSet resultSet = statement.executeQuery(query);
+		while(resultSet.next()) {
+			Answer tmpAnswer = new Answer();
+			tmpAnswer.setId(resultSet.getInt(ANSWER_ID));
+			tmpAnswer.setTableID(resultSet.getInt(TABLE_ID));
+			tmpAnswer.setAnswer(resultSet.getString(ANSWER));
+			tmpAnswer.setValue(resultSet.getInt(ANSWER_VALUE));
+			retList.add(tmpAnswer);
+		}
+		connection.close();
+		
+		return retList.toArray(new Answer[retList.size()]);
+	}
+
+	public Question[] getTableQuestions(int tableID) throws SQLException {
+		
+		String query = GET_QUESTIONS + tableID;
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url, config.getMySQLUser(), config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		ArrayList<Question> retList = new ArrayList<Question>();
+		
+		ResultSet resultSet = statement.executeQuery(query);
+		while(resultSet.next()) {
+			Question tmpQuestion = new Question();
+			tmpQuestion.setId(resultSet.getInt(QUESTION_ID));
+			tmpQuestion.setTableID(resultSet.getInt(TABLE_ID));
+			tmpQuestion.setQuestion(resultSet.getString(QUESTION));
+			retList.add(tmpQuestion);
+		}
+		connection.close();
+		
+		return retList.toArray(new Question[retList.size()]);
+	}
+
+	public Input[] getPollInputs(int pollID) throws SQLException {
+		
+		String query = GET_INPUTS + pollID;
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url, config.getMySQLUser(), config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		ArrayList<Input> retList = new ArrayList<Input>();
+		
+		ResultSet resultSet = statement.executeQuery(query);
+		while(resultSet.next()) {
+			Input tmpInput = new Input();
+			tmpInput.setId(resultSet.getInt(INPUT_ID));
+			tmpInput.setPollID(resultSet.getInt(POLL_ID));
+			tmpInput.setQuestion(resultSet.getString(INPUT_QUESTION));
+			retList.add(tmpInput);
+		}
+		connection.close();
+		
+		return retList.toArray(new Input[retList.size()]);
+	}
+
+	public Integer[] getGroupPollIDs(int groupID) throws SQLException {
+		
+		String query = GET_GROUP_POLLS + groupID;
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url, config.getMySQLUser(), config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		ArrayList<Integer> retList = new ArrayList<Integer>();
+		
+		ResultSet resultSet = statement.executeQuery(query);
+		while(resultSet.next()) {
+			retList.add(resultSet.getInt(POLL_ID));
+		}
+		connection.close();
+		
+		return retList.toArray(new Integer[retList.size()]);
+	}
+
+	public ResultSet getUserAnswers(int ... groupIDs) throws SQLException{
+		
+		String query = GET_USER_ANSWERS1;
+		for(int i=0;i<groupIDs.length-1;i++) {
+			query += groupIDs[i] + " or " + GROUP_ID + "="; 
+		}
+		query+= groupIDs[groupIDs.length - 1] + GET_USER_ANSWERS2;
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url, config.getMySQLUser(), config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery(query);
+		return resultSet;
 	}
 }

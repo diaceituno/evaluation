@@ -3,6 +3,8 @@ package core;
 import java.sql.SQLException;
 
 import entities.Configuration;
+import entities.Group;
+import entities.Poll;
 import entities.User;
 
 public class MainController {
@@ -22,14 +24,28 @@ public class MainController {
 			config.setMySQLUser("diego");
 			config.setMySQLPass("evaluation");
 			config.setMySQLDatabase("eval");
-			
-			DBControl dbControl = null;
 			try {
-				dbControl = DBControl.getInstance();
-			} catch (ClassNotFoundException e) {
+				DBControl.getInstance().getUserAnswers(1,2,3);
+			} catch (ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+			EntityManager em = EntityManager.getInstance();
+			System.out.println(em.loadBranches());
+			em.setBranch(em.getBranches()[1]);
+			System.out.println(em.loadPolls());
+			em.setPoll(em.getPolls()[0]);
+			System.out.println(em.loadGroups());
+			em.setGroup(em.getGroups()[0]);
+			System.out.println(em.loadGroupPolls());
+			System.out.println(em.loadTables());
+			System.out.println(em.loadQuestions());
+			System.out.println(em.loadAnswers());
+			System.out.println(em.loadInputs());
+			System.out.println(em.loadUsers());
+			for(User user :  em.getUsers()) {
+				System.out.println(user.getId()+"|"+user.getUserName() + "|" + user.getGroupID());
+			}
 	}
 	
 }
