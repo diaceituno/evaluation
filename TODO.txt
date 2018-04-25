@@ -1,0 +1,8 @@
+DBController:
+	- Query branches [x]
+	- Query groups in branch [x]
+	- Query polls in branch [x]
+	- query users in group [x]
+	- query tables in poll []
+	- query answers in table []
+	- query questions in table []
