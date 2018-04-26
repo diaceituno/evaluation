@@ -357,4 +357,8 @@ public class EntityManager {
 	public Answer[] getAnswers(Table table) {
 		return tableAnswers.get(table);
 	}
+
+	public ResultSet getUserAnswers() {
+		return userAnswers;
+	}
 }

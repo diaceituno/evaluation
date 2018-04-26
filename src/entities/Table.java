@@ -10,6 +10,7 @@ public class Table {
 	private Question[] questions;
 	private Answer[] answers;
 	
+	//AUTO GETTER SETTER
 	public int getId() {
 		return id;
 	}
@@ -41,6 +42,13 @@ public class Table {
 		this.answers = answers;
 	}
 	
-		
-	
+	//Setting methods
+	public void setChildrenIDs() {
+		for(Question question : questions) {
+			question.setTableID(this.id);
+		}
+		for(Answer answer : answers) {
+			answer.setTableID(this.id);
+		}
+	}
 }
