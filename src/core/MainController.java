@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import pollElements.MCTable;
+import pollElements.PollInput;
 
 
 public class MainController extends Application{
@@ -51,6 +52,12 @@ public class MainController extends Application{
 		table.reposition();
 		table.generateHandlers();
 		pane.getChildren().add(table);
+		
+		PollInput input = new PollInput();
+		input.setQuestionX(100);
+		input.setQuestionY(100);
+		input.generateNodes();
+		pane.getChildren().add(input);
 		stage.setScene(scene);
 		stage.show();
 		
