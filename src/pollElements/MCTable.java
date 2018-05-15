@@ -12,6 +12,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -19,6 +20,7 @@ import javafx.scene.shape.Rectangle;
 public class MCTable extends Group{
 
 	//Elements
+	AnchorPane parent;
 	private ArrayList<Line> vLines;
 	private ArrayList<Line> hLines;
 	private ArrayList<TextArea> titles;
@@ -55,6 +57,66 @@ public class MCTable extends Group{
 		this.getChildren().addAll(resizeRec,movRec);
 	}
 	
+	public MCTable duplicate() {
+		
+		MCTable table = new MCTable();
+		table.setParent(parent);
+		table.setPositionX(this.positionX);
+		table.setPositionY(this.positionX);
+		table.setTableHeight(this.tableHeight);
+		table.setTableWidth(this.tableWidth);
+		table.setCols(this.cols);
+		table.setRows(this.rows);
+		table.generateNodes();
+		
+		ArrayList<Line> tvLines = table.getVLines();
+		ArrayList<Line> thLines = table.getHLines();
+		ArrayList<TextArea> tTitles = table.getTitles();
+		ArrayList<TextArea> tQuestions = table.getQuestions();
+		
+		for(int i=0; i < tvLines.size(); i++) {
+			Line line = vLines.get(i);
+			Line tLine = tvLines.get(i);
+			tLine.setStartX(line.getStartX());
+			tLine.setEndX(line.getEndX());
+			tLine.setStartY(line.getStartY());
+			tLine.setEndY(line.getEndY());
+		}
+		
+		for(int i=0; i < thLines.size(); i++) {
+			Line line = hLines.get(i);
+			Line tLine = thLines.get(i);
+			tLine.setStartX(line.getStartX());
+			tLine.setEndX(line.getEndX());
+			tLine.setStartY(line.getStartY());
+			tLine.setEndY(line.getEndY());
+		}
+		for(int i=0; i < tTitles.size(); i++) {
+			TextArea area = titles.get(i);
+			TextArea tArea = tTitles.get(i);
+			tArea.setPrefHeight(area.getPrefHeight());
+			tArea.setPrefWidth(area.getPrefWidth());
+			tArea.setLayoutX(area.getLayoutX());
+			tArea.setLayoutY(area.getLayoutY());
+			tArea.setText(area.getText());
+		}
+		for(int i=0; i < tQuestions.size(); i++) {
+			TextArea area = questions.get(i);
+			TextArea tArea = tQuestions.get(i);
+			tArea.setPrefHeight(area.getPrefHeight());
+			tArea.setPrefWidth(area.getPrefWidth());
+			tArea.setLayoutX(area.getLayoutX());
+			tArea.setLayoutY(area.getLayoutY());
+			tArea.setText(area.getText());
+		}
+		table.getMov().setLayoutX(movRec.getLayoutX());
+		table.getMov().setLayoutY(movRec.getLayoutY());
+		table.getRes().setLayoutX(resizeRec.getLayoutX());
+		table.getRes().setLayoutY(resizeRec.getLayoutY());
+		return table;
+	}
+	
+	
 	public void setRows(int rows) {
 		this.rows = rows;
 	}
@@ -64,11 +126,11 @@ public class MCTable extends Group{
 	}
 	
 	public void setPositionX(double positionX) {
-		this.positionX = positionX;
+		this.positionX = positionX - parent.getLayoutX();
 	}
 	
 	public void setPositionY(double positionY) {
-		this.positionY = positionY;
+		this.positionY = positionY - parent.getLayoutY();
 	}
 	
 	public void setTableWidth(double tableWidth) {
@@ -113,6 +175,9 @@ public class MCTable extends Group{
 		
 		//Titlearea
 		titles.get(0).setPromptText("TITEL");
+		generateContextMenus();
+		generateHandlers();
+		reposition();
 	}
 
 	public void generateContextMenus() {
@@ -147,6 +212,29 @@ public class MCTable extends Group{
 			titles.get(i).setContextMenu(cMenu);
 		}
 		
+		ContextMenu cMenu = new ContextMenu();
+		MenuItem addR = new MenuItem("Zeile Addieren");
+		MenuItem removeR = new MenuItem("Zeile Entfernen");
+		MenuItem addC = new MenuItem("Spalte Addieren");
+		MenuItem removeC = new MenuItem("Spalte Entfernen");
+		cMenu.getItems().addAll(addR,removeR,addC,removeC);
+		
+		addR.setOnAction(e->{
+			addRow();
+		});
+		removeR.setOnAction(e->{
+			removeRow();
+		});
+		addC.setOnAction(e->{
+			addCol();
+		});
+		removeC.setOnAction(e->{
+			removeCol();
+		});
+		
+		titles.get(0).setContextMenu(cMenu);
+		
+		
 	}
 		
 	public void generateHandlers() {
@@ -162,16 +250,26 @@ public class MCTable extends Group{
 		});
 		
 		resizeRec.setOnMouseDragged(e->{
-			boundsRec.setHeight( e.getSceneY() - positionY );
-			boundsRec.setWidth(e.getSceneX() - positionX);
-			resizeRec.setLayoutX(e.getSceneX());
-			resizeRec.setLayoutY(e.getSceneY());
+			double realX = e.getSceneX() - parent.getLayoutX();
+			double realY = e.getSceneY() - parent.getLayoutY();
+			double maxX = parent.getPrefWidth();
+			double minX = boundsRec.getLayoutX() + 50*cols;
+			double maxY = parent.getPrefHeight();
+			double minY = boundsRec.getLayoutY() +50*rows;
+			if((realX > minX)&&(realX < maxX)) {
+				boundsRec.setWidth(realX - positionX );
+				resizeRec.setLayoutX(realX);
+			}
+			if((realY > minY)&&(realY < maxY)) {
+				boundsRec.setHeight(realY - positionY);
+				resizeRec.setLayoutY(realY);
+			}
+			
 		});
 		
 		resizeRec.setOnMouseReleased(e->{
-			
-			tableWidth = e.getSceneX() - positionX;
-			tableHeight = e.getSceneY() - positionY;
+			tableWidth = boundsRec.getWidth();
+			tableHeight = boundsRec.getHeight();
 			reposition();
 			this.getChildren().clear();
 			this.getChildren().addAll(hLines);
@@ -191,15 +289,25 @@ public class MCTable extends Group{
 		});
 		
 		movRec.setOnMouseDragged(e->{
-			boundsRec.setLayoutX(e.getSceneX() - (tableWidth/2));
-			boundsRec.setLayoutY(e.getSceneY() + 6);
-			movRec.setLayoutX(e.getSceneX());
-			movRec.setLayoutY(e.getSceneY());
+			double realX = e.getSceneX() - parent.getLayoutX();
+			double realY = e.getSceneY() - parent.getLayoutY();
+			double minX = boundsRec.getWidth()/2;
+			double maxX = parent.getPrefWidth() - minX;
+			double maxY = parent.getPrefHeight() - boundsRec.getHeight();
+			double minY = 0;
+			if((realX > minX)&&(realX < maxX)) {
+				boundsRec.setLayoutX(realX - minX);
+				movRec.setLayoutX(realX);
+			}
+			if((realY > minY)&&(realY < maxY)) {
+				boundsRec.setLayoutY(realY + 6);
+				movRec.setLayoutY(realY);
+			}
 		});
 		
 		movRec.setOnMouseReleased(e->{
-			positionX = e.getSceneX() - (tableWidth/2);
-			positionY = e.getSceneY() + 6;
+			positionX = boundsRec.getLayoutX();
+			positionY = boundsRec.getLayoutY();
 			reposition();
 			this.getChildren().clear();
 			this.getChildren().addAll(hLines);
@@ -321,6 +429,10 @@ public class MCTable extends Group{
 		reposition();
 	}
 
+	public void setParent(AnchorPane parent) {
+		this.parent = parent;
+	}
+	
 	public Table getTable() {
 		
 		Table table = new Table();
@@ -356,5 +468,28 @@ public class MCTable extends Group{
 		table.setQuestions(tableQuestions);
 		
 		return table;
+	}
+
+	public ArrayList<Line> getVLines(){
+		return vLines;
+	}
+
+	public ArrayList<Line> getHLines(){
+		return hLines;
+	}
+	
+	public ArrayList<TextArea> getTitles(){
+		return titles;
+	}
+	
+	public ArrayList<TextArea> getQuestions(){
+		return questions;
+	}
+
+	public Rectangle getMov() {
+		return movRec;
+	}
+	public Rectangle getRes() {
+		return resizeRec;
 	}
 }

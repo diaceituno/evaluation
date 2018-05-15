@@ -322,7 +322,11 @@ public class EntityManager {
 	}
 	
 	//get Methods
-	public Branch[] getBranches() {
+	public Branch getBranch() {
+		return branch;
+	}
+	
+ 	public Branch[] getBranches() {
 		return branches;
 	}
 	

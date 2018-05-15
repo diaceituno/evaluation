@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import javafx.scene.layout.AnchorPane;
+
 public class IOControl {
 	
 	private static final String ENCODING = "UTF-8";
@@ -37,5 +39,10 @@ public class IOControl {
 		OutputStreamWriter osWriter = new OutputStreamWriter(foStream, ENCODING);
 		osWriter.write(content);
 		osWriter.close();
+	}
+
+	public AnchorPane loadPane(String path, Object controller) {
+		
+		return null;
 	}
 }

@@ -4,6 +4,7 @@ import entities.Input;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -22,6 +23,7 @@ public class PollInput extends Group{
 	private double questionY;
 	private double inputX;
 	private double inputY;
+	private AnchorPane parent;
 	
 	public PollInput() {
 		
@@ -57,10 +59,21 @@ public class PollInput extends Group{
 		});
 		
 		qResize.setOnMouseDragged(e->{
-			boundsRec.setHeight(e.getSceneY() - questionArea.getLayoutY());
-			boundsRec.setWidth(e.getSceneX() - questionArea.getLayoutX());
-			qResize.setLayoutX(e.getSceneX());
-			qResize.setLayoutY(e.getSceneY());
+			double realX = e.getSceneX() - parent.getLayoutX();
+			double realY = e.getSceneY() - parent.getLayoutY();
+			double maxX = parent.getPrefWidth();
+			double minX = questionArea.getLayoutX() + 50;
+			double maxY = parent.getPrefHeight();
+			double minY = questionArea.getLayoutY() + 50;
+			
+			if((realX > minX)&&(realX < maxX)) {
+				boundsRec.setWidth(realX - questionArea.getLayoutX());
+				qResize.setLayoutX(realX);
+			}
+			if((realY > minY)&&(realY < maxY)) {
+				boundsRec.setHeight(realY - questionArea.getLayoutY());
+				qResize.setLayoutY(realY);
+			}
 		});
 		
 		qResize.setOnMouseReleased(e->{
@@ -84,10 +97,21 @@ public class PollInput extends Group{
 		});
 		
 		iResize.setOnMouseDragged(e->{
-			boundsRec.setHeight(e.getSceneY() - inputArea.getLayoutY());
-			boundsRec.setWidth(e.getSceneX() - inputArea.getLayoutX());
-			iResize.setLayoutX(e.getSceneX());			
-			iResize.setLayoutY(e.getSceneY());
+			double realX = e.getSceneX() - parent.getLayoutX();
+			double realY = e.getSceneY() - parent.getLayoutY();
+			double maxX = parent.getPrefWidth();
+			double minX = inputArea.getLayoutX() + 50;
+			double maxY = parent.getPrefHeight();
+			double minY = inputArea.getLayoutY() + 50;
+			
+			if((realX > minX)&&(realX < maxX)) {
+				boundsRec.setWidth(realX - inputArea.getLayoutX());
+				iResize.setLayoutX(realX);
+			}
+			if((realY > minY)&&(realY < maxY)) {
+				boundsRec.setHeight(realY - inputArea.getLayoutY());
+				iResize.setLayoutY(realY);
+			}
 		});
 		
 		iResize.setOnMouseReleased(e->{
@@ -111,10 +135,22 @@ public class PollInput extends Group{
 		});
 		
 		qMove.setOnMouseDragged(e->{
-			boundsRec.setLayoutX(e.getSceneX() - boundsRec.getWidth()/2);
-			boundsRec.setLayoutY(e.getSceneY() + 6);
-			qMove.setLayoutX(e.getSceneX());
-			qMove.setLayoutY(e.getSceneY());
+			
+			double realX = e.getSceneX() - parent.getLayoutX();
+			double realY = e.getSceneY() - parent.getLayoutY();
+			double minX = questionArea.getPrefWidth()/2;
+			double maxX = parent.getPrefWidth() - questionArea.getPrefWidth()/2;
+			double minY = 0;
+			double maxY = parent.getPrefHeight() - questionArea.getPrefHeight() - 6;
+			
+			if((realX > minX)&&(realX < maxX)) {
+				qMove.setLayoutX(realX);
+				boundsRec.setLayoutX(realX - boundsRec.getWidth()/2);
+			}
+			if((realY > minY)&&(realY < maxY)) {
+				qMove.setLayoutY(realY);
+				boundsRec.setLayoutY(realY + 6);
+			}
 		});
 		
 		qMove.setOnMouseReleased(e->{
@@ -138,10 +174,22 @@ public class PollInput extends Group{
 		});
 		
 		iMove.setOnMouseDragged(e->{
-			boundsRec.setLayoutX(e.getSceneX() - boundsRec.getWidth()/2);
-			boundsRec.setLayoutY(e.getSceneY() + 6);
-			iMove.setLayoutX(e.getSceneX());
-			iMove.setLayoutY(e.getSceneY());
+			
+			double realX = e.getSceneX() - parent.getLayoutX();
+			double realY = e.getSceneY() - parent.getLayoutY();
+			double minX = inputArea.getPrefWidth()/2;
+			double maxX = parent.getPrefWidth() - inputArea.getPrefWidth()/2;
+			double minY = 0;
+			double maxY = parent.getPrefHeight() - inputArea.getPrefHeight() - 6;
+			
+			if((realX > minX)&&(realX < maxX)) {
+				iMove.setLayoutX(realX);
+				boundsRec.setLayoutX(realX - boundsRec.getWidth()/2);
+			}
+			if((realY > minY)&&(realY < maxY)) {
+				iMove.setLayoutY(realY);
+				boundsRec.setLayoutY(realY + 6);
+			}
 		});
 		
 		iMove.setOnMouseReleased(e->{
@@ -154,6 +202,40 @@ public class PollInput extends Group{
 			this.getChildren().addAll(qResize,iResize,qMove,iMove);
 		});
 		
+	}
+	
+	public PollInput duplicate() {
+		
+		PollInput input = new PollInput();
+		input.generateNodes();
+		TextArea question = input.getQuestion();
+		TextArea in = input.getInputArea();
+		Rectangle qMov = input.getQMov();
+		Rectangle iMov = input.getIMove();
+		Rectangle qRes = input.getQres();
+		Rectangle iRes = input.getIRes();
+		
+		question.setPrefHeight(questionArea.getPrefHeight());
+		question.setPrefWidth(questionArea.getPrefWidth());
+		question.setLayoutX(questionArea.getLayoutX());
+		question.setLayoutY(questionArea.getLayoutY());
+		question.setText(questionArea.getText());
+		in.setPrefHeight(inputArea.getPrefHeight());
+		in.setPrefWidth(inputArea.getPrefWidth());
+		in.setLayoutX(inputArea.getLayoutX());
+		in.setLayoutY(inputArea.getLayoutY());
+		
+		qMov.setLayoutX(qMove.getLayoutX());
+		qMov.setLayoutY(qMove.getLayoutY());
+		qRes.setLayoutX(qResize.getLayoutX());
+		qRes.setLayoutY(qResize.getLayoutY());
+		
+		iMov.setLayoutX(iMove.getLayoutX());
+		iMov.setLayoutY(iMove.getLayoutY());
+		iRes.setLayoutX(iResize.getLayoutX());
+		iRes.setLayoutY(iResize.getLayoutY());
+		
+		return input;
 	}
 	
 	public void generateNodes() {
@@ -188,13 +270,13 @@ public class PollInput extends Group{
 	}
 	
 	public void setQuestionX(double questionX) {
-		this.questionX = questionX;
-		setInputX(questionX + 100);
+		this.questionX = questionX - parent.getLayoutX();
+		setInputX(this.questionX + 100);
 	}
 
 	public void setQuestionY(double questionY) {
-		this.questionY = questionY;
-		setInputY(questionY);
+		this.questionY = questionY - parent.getLayoutY();
+		setInputY(this.questionY);
 	}
 
 	public void setInputX(double inputX) {
@@ -205,9 +287,37 @@ public class PollInput extends Group{
 		this.inputY = inputY;
 	}
 
+	public void setParent(AnchorPane parent) {
+		this.parent = parent;
+	}
+	
 	public Input getInput() {
 		Input input = new Input();
 		input.setQuestion(questionArea.getText());
 		return input;
+	}
+
+	public TextArea getQuestion() {
+		return questionArea;
+	}
+	
+	public TextArea getInputArea() {
+		return inputArea;
+	}
+	
+	public Rectangle getQMov() {
+		return qMove;
+	}
+	
+	public Rectangle getQres() {
+		return qResize;
+	}
+
+	public Rectangle getIMove() {
+		return iMove;
+	}
+	
+	public Rectangle getIRes() {
+		return iResize;
 	}
 }
