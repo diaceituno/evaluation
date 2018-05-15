@@ -9,6 +9,7 @@ import core.EntityManager;
 import entities.Branch;
 import entities.Configuration;
 import entities.Poll;
+import entities.Table;
 import generator.SceneParser;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
@@ -262,18 +263,28 @@ public class EditorControl {
 			//error message and log
 		}
 		if(db != null) {
-			int pollID;
+			int pollID = 0;
 			try {
 				pollID = db.savePoll(branch, poll);
+				System.out.println("pollID: "+pollID);
 			} catch (SQLException e) {
-				//error and log
+				e.printStackTrace();
 			}
-			
+			poll.setId(pollID);
 			for(Group group : pages) {
-				
 				MCTable tables[] = parser.getMCTables(group);
 				PollInput inputs[] = parser.getPollInputs(group);
-				
+				for(MCTable table : tables) {
+					try {
+						Table toSave = table.getTable();
+						int tID = db.saveTable(poll, toSave);
+						toSave.setId(tID);
+						db.saveQuestions(toSave);
+						db.saveAnswers(toSave);
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 		

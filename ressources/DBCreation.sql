@@ -9,7 +9,7 @@ use eval;
 #Creating Entities
 #Branches
 create table branches(
-	branchID tinyint not null auto_increment,
+	branchID smallint not null auto_increment,
 	branchName varchar(100),
 	
 	primary key(branchID)
@@ -19,8 +19,8 @@ comment='Stores all Branches in MIQR, uniquely identified by branchID';
 
 #Groups
 create table `groups`(
-	groupID tinyint not null auto_increment,
-	branchID tinyint,
+	groupID smallint not null auto_increment,
+	branchID smallint,
 	groupName varchar(100),
 	
 	foreign key(branchID) references branches(branchID),
@@ -31,8 +31,8 @@ comment='Stores groups in MIQR with reference to the branch they belong to';
 
 #Polls
 create table polls(
-	pollID tinyint not null auto_increment,
-	branchID tinyint,
+	pollID smallint not null auto_increment,
+	branchID smallint,
 	pollName varchar(100) not null,
 	fxml text,
 	
@@ -44,8 +44,8 @@ Comment='Stores all polls and their respective fxml code';
 
 #Users
 create table `users`(
-	userID tinyint not null auto_increment,
-	groupID tinyint,
+	userID smallint not null auto_increment,
+	groupID smallint,
 	userName varchar(100) not null unique,
 	
 	foreign key(groupID) references `groups`(groupID),
@@ -56,8 +56,8 @@ Comment='Stores all users in MIQR and their respective group';
 
 #pollgroup
 create table pollsgroups(
-	groupID tinyint,
-	pollID tinyint,
+	groupID smallint,
+	pollID smallint,
 	
 	foreign key(groupID) references `groups`(groupID),
 	foreign key(pollID) references polls(pollID)
@@ -67,8 +67,8 @@ Comment='Stores the relationship between the polls and the groups they have been
 
 #polltable
 create table polltables(
-	tableID tinyint not null auto_increment,
-	pollID tinyint,
+	tableID smallint not null auto_increment,
+	pollID smallint,
 	tableTitle varchar(300),
 	
 	foreign key(pollID) references polls(pollID),
@@ -79,8 +79,8 @@ Comment='Stores the different multiple choice tables in a poll';
 
 #pollinput
 create table pollinputs(
-	inputID tinyint not null auto_increment,
-	pollID tinyint,
+	inputID smallint not null auto_increment,
+	pollID smallint,
 	inputQuestion varchar(300),
 	
 	foreign key(pollID) references polls(pollID),
@@ -91,8 +91,8 @@ Comment='Stores the different text input fields in a poll';
 
 #tablequestions
 create table tablequestions(
-	questionID tinyint not null auto_increment,
-	tableID tinyint,
+	questionID smallint not null auto_increment,
+	tableID smallint,
 	question varchar(300),
 	
 	foreign key(tableID) references polltables(tableID),
@@ -103,10 +103,10 @@ Comment='Stores the different question within a multiple choice table';
 
 #tableanswers
 create table tableanswers(
-	answerID tinyint not null auto_increment,
-	tableID tinyint,
+	answerID smallint not null auto_increment,
+	tableID smallint,
 	answer varchar(300),
-	value tinyint,
+	value smallint,
 	
 	foreign key(tableID) references polltables(tableID),
 	primary key(answerID)
@@ -117,9 +117,9 @@ Comment='Stores the different answers within a multiple choice question and thei
 #USER INPUTS
 #useranswers
 create table useranswers(
-	userID tinyint,
-	questionID tinyint,
-	answerID tinyint,
+	userID smallint,
+	questionID smallint,
+	answerID smallint,
 	
 	foreign key(userID) references users(userID),
 	foreign key(questionID) references tablequestions(questionID),
@@ -130,8 +130,8 @@ Comment='Stores the users answer to a question within a multiple choice table';
 
 #userinputs
 create table userinputs(
-	userID tinyint,
-	inputID tinyint,
+	userID smallint,
+	inputID smallint,
 	input text
 )
 

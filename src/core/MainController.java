@@ -1,5 +1,6 @@
 package core;
 
+import entities.Branch;
 import entities.Configuration;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -9,7 +10,7 @@ import viewControl.EditorControl;
 public class MainController extends Application{
 
 	public static void main(String[] args) {
-			launch(args);
+		
 			Configuration config = Configuration.getInstance();
 			config.setLdapDomain("miqr.local");
 			config.setLdapRoot("dc=miqr,dc=local");
@@ -23,7 +24,7 @@ public class MainController extends Application{
 			config.setMySQLUser("diego");
 			config.setMySQLPass("evaluation");
 			config.setMySQLDatabase("eval");
-	
+			launch(args);
 			
 	}
 

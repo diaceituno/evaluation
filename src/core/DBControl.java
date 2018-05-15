@@ -51,6 +51,7 @@ public class DBControl {
 	private final String GET_TABLES = "select * from polltables where " + POLL_ID + "=";
 	private final String TABLE_ID = "tableID";
 	private final String TABLE_TITLE = "tableTitle";
+	private final String SAVE_TABLE = "insert into polltables values(null,";
 	
 	//Answers
 	private final String GET_ANSWERS = "select * from tableanswers where " + TABLE_ID + "=";
@@ -60,12 +61,13 @@ public class DBControl {
 	private final String GET_USER_ANSWERS1 = "select questionID, answerID from (select userID, groupID from users where "
 											+ GROUP_ID + "=";
 	private final String GET_USER_ANSWERS2 = ") as userView inner join useranswers on userView.userID = useranswers.userID";
-
+	private final String SAVE_ANSWER = "insert into tableanswers ";
 	
 	//QUESTIONS
 	private final String GET_QUESTIONS = "select * from tablequestions where " + TABLE_ID + "=";
 	private final String QUESTION_ID = "questionID";
 	private final String QUESTION = "question";
+	private final String SAVE_QUESTION = "insert into tablequestions ";
 	
 	//INPUTS
 	private final String GET_INPUTS = "select * from pollinputs where " + POLL_ID + "=";
@@ -322,7 +324,6 @@ public class DBControl {
 	//SAVE METHODS
 	public int saveBranch(Branch branch) throws SQLException {
 		String query = SAVE_BRANCH + "'" + branch.getName() + "')";
-		System.out.println(query);
 		Configuration config = Configuration.getInstance();
 		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
 		Statement statement = connection.createStatement();
@@ -354,9 +355,11 @@ public class DBControl {
 		Statement statement = connection.createStatement();
 		statement.execute(query,Statement.RETURN_GENERATED_KEYS);
 		ResultSet resultSet = statement.getGeneratedKeys();
-		connection.close();
 		resultSet.next();
-		return resultSet.getInt(1);
+		int result = resultSet.getInt(1);
+		connection.close();
+	
+		return result;
 	}
 	
 	public boolean saveUsers(Group group,User...users) throws SQLException {
@@ -383,5 +386,49 @@ public class DBControl {
 		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
 		Statement statement = connection.createStatement();
 		return !statement.execute(query);
+	}
+
+	public int saveTable(Poll poll, Table table) throws SQLException {
+				
+		String query = SAVE_TABLE + poll.getId() + ",'" + table.getTitle() + "')";
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		statement.execute(query,Statement.RETURN_GENERATED_KEYS);
+		ResultSet result = statement.getGeneratedKeys();
+		result.next();
+		int ret = result.getInt(1);
+		connection.close();
+		return ret;
+	}
+	
+	public void saveQuestions(Table table) throws SQLException {
+		
+		Question questions[] = table.getQuestions();
+		
+		String query = SAVE_QUESTION + "values(null," + table.getId() + ",'" + questions[0].getQuestion() + "')";
+		for(int i=1; i<questions.length;i++) {
+			query += ",(null," + table.getId() + ",'" + questions[i].getQuestion() + "')";
+		}
+
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		statement.execute(query);
+		connection.close();
+	}
+
+	public void saveAnswers(Table table) throws SQLException {
+		
+		Answer answers[] = table.getAnswers();
+		String query = SAVE_ANSWER + " values(null," + table.getId() + ",'" + answers[0].getAnswer() + "'," + answers[0].getValue() +")";
+		for(int i=1; i<answers.length;i++) {
+			query+= ",(null," + table.getId() + ",'" + answers[i].getAnswer() + "'," + answers[i].getValue() +")";
+		}		System.out.println(query);
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		statement.execute(query);
+		connection.close();
 	}
 }
