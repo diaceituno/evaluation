@@ -7,10 +7,13 @@ import java.util.ArrayList;
 import core.DBControl;
 import core.EntityManager;
 import entities.Branch;
-import entities.Configuration;
+import entities.Input;
 import entities.Poll;
 import entities.Table;
 import generator.SceneParser;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -20,6 +23,10 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
@@ -43,6 +50,14 @@ public class EditorControl {
 	private Label pageLabel;
 	private Button nextBtn;
 	private Button prevBtn;
+	
+	//OPENSAVE
+	private Stage openSaveStage;
+	private Scene openSaveScene;
+	private ObservableList<Poll> openSaveItems;
+	TableView<Poll> tView;
+	FilteredList<Poll> tViewItems;
+	TextField nameField;
 	
 	//DIMENSIONS
 	private final double PAGE_HEIGHT = 800;
@@ -248,44 +263,55 @@ public class EditorControl {
 	private void save() {
 		
 		//INPUT NAME
-		Poll poll = new Poll();
-		poll.setPollName("testpoll");
-		
-		Branch branch = EntityManager.getInstance().getBranch();
-		
-		SceneParser parser = new SceneParser();
-		Configuration config = Configuration.getInstance();
-		DBControl db = null;
-		
-		try {
-			db  = DBControl.getInstance();
-		} catch (ClassNotFoundException e) {
-			//error message and log
-		}
-		if(db != null) {
-			int pollID = 0;
+		Poll poll = openSaveWindow("Speichern");
+		if(poll != null) {
+			Branch branch = EntityManager.getInstance().getBranch();
+			
+			SceneParser parser = new SceneParser();
+			DBControl db = null;
+			
 			try {
-				pollID = db.savePoll(branch, poll);
-				System.out.println("pollID: "+pollID);
-			} catch (SQLException e) {
-				e.printStackTrace();
+				db  = DBControl.getInstance();
+			} catch (ClassNotFoundException e) {
+				//error message and log
 			}
-			poll.setId(pollID);
-			for(Group group : pages) {
-				MCTable tables[] = parser.getMCTables(group);
-				PollInput inputs[] = parser.getPollInputs(group);
-				for(MCTable table : tables) {
-					try {
-						Table toSave = table.getTable();
-						int tID = db.saveTable(poll, toSave);
-						toSave.setId(tID);
-						db.saveQuestions(toSave);
-						db.saveAnswers(toSave);
-					} catch (SQLException e) {
-						e.printStackTrace();
+			if(db != null) {
+				int pollID = 0;
+				try {
+					if(tViewItems.contains(poll)) {
+						db.deletePoll(poll);
+					}
+					pollID = db.savePoll(branch, poll);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				poll.setId(pollID);
+				for(Group group : pages) {
+					MCTable tables[] = parser.getMCTables(group);
+					PollInput inputs[] = parser.getPollInputs(group);
+					for(MCTable table : tables) {
+						try {
+							Table toSave = table.getTable();
+							int tID = db.saveTable(poll, toSave);
+							toSave.setId(tID);
+							db.saveQuestions(toSave);
+							db.saveAnswers(toSave);
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+					for(PollInput pollInput : inputs) {
+						Input input = pollInput.getInput();
+						try {
+							db.saveInputs(poll, input);
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 			}
+			
 		}
 		
 	}
@@ -367,4 +393,80 @@ public class EditorControl {
 		}
 	}
 
+	private Poll openSaveWindow(String title) {
+		
+		if(openSaveStage == null) {
+			
+			//INITIALIZING
+			openSaveStage = new Stage();
+			AnchorPane pane = new AnchorPane();
+			tView = new TableView<Poll>();
+			TableColumn<Poll,String> idCol = new TableColumn<Poll,String>("ID");
+			TableColumn<Poll,String> nameCol = new TableColumn<Poll,String>("Name");
+			idCol.setCellValueFactory(new PropertyValueFactory<Poll,String>("id"));
+			nameCol.setCellValueFactory(new PropertyValueFactory<Poll,String>("pollName"));
+			Button button = new Button("OK");
+			nameField = new TextField();
+			
+			//ADDING
+			tView.getColumns().add(idCol);
+			tView.getColumns().add(nameCol);
+			tView.setItems(openSaveItems);
+			pane.getChildren().addAll(tView,button,nameField);
+			
+			//DIMENSIONING
+			pane.setPrefHeight(450);
+			pane.setPrefWidth(300);
+			tView.setPrefHeight(400);
+			tView.setPrefWidth(300);
+			idCol.setPrefWidth(50);
+			nameCol.setPrefWidth(230);
+			idCol.setResizable(false);
+			nameCol.setResizable(false);
+			openSaveStage.setResizable(false);
+			button.setPrefWidth(50);
+			
+			//POSITIONING
+			button.setLayoutX(240);
+			button.setLayoutY(420);
+			nameField.setLayoutX(70);
+			nameField.setLayoutY(420);
+		
+			//Handling
+			nameField.setOnKeyReleased(e->{
+				tView.getSelectionModel().clearSelection();
+				String fieldValue = nameField.getText();
+				if(fieldValue.isEmpty()) {
+					tViewItems.setPredicate(p->true);
+				}else {
+					tViewItems.setPredicate(p -> p.getPollName().contains(fieldValue));
+				}
+			});
+			button.setOnAction(e->{
+				openSaveStage.close();
+			});
+			
+			openSaveScene = new Scene(pane);
+			openSaveStage.setScene(openSaveScene);
+			
+		}
+		openSaveStage.setTitle(title);
+		EntityManager em = EntityManager.getInstance();
+		em.loadPolls();
+		tViewItems = new FilteredList<Poll>(FXCollections.observableArrayList(em.getPolls()),p->true);
+		tView.setItems(tViewItems);
+		openSaveStage.showAndWait();
+		
+		//Closing
+		Poll selection = tView.getSelectionModel().getSelectedItem();
+		if(selection == null) {
+			if(nameField.getText().isEmpty()) {
+				return null;
+			}
+			Poll retPoll = new Poll();
+			retPoll.setPollName(nameField.getText());
+			return retPoll;
+		}
+		return selection;
+	}
 }

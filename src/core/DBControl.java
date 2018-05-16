@@ -16,6 +16,7 @@ import entities.Poll;
 import entities.Question;
 import entities.Table;
 import entities.User;
+import pollElements.PollInput;
 
 public class DBControl {
 	
@@ -35,11 +36,11 @@ public class DBControl {
 	
 	//POLLS
 	private final String GET_POLLS = "select * from polls where " + BRANCH_ID + "=";
-	private final String SAVE_POLL = "insert into polls values(null,";
+	private final String SAVE_POLL = "insert into polls values(";
 	private final String POLL_ID = "pollID";
 	private final String POLL_NAME = "pollName";
 	private final String POLL_FXML = "fxml";
-	
+	private final String DELETE_POLL = "delete from polls where pollID=";
 	//USERS
 	private final String USER_ID = "userID";
 	private final String USER_NAME = "userName";
@@ -75,6 +76,7 @@ public class DBControl {
 	private final String INPUT_QUESTION = "inputQuestion";
 	private final String GET_USER_INPUTS1 = "select inputID, input from(select userID from `users` where ";
 	private final String GET_USER_INPUTS2 = ") as userView inner join userinputs on userView.userID=userinputs.userID";
+	private final String SAVE_INPUT = "insert into pollinputs values (null,";
 	
 	//GROUPPOLLS
 	private final String GET_GROUP_POLLS = "select " + POLL_ID + " from pollsgroups where " + GROUP_ID + "="; 
@@ -348,8 +350,7 @@ public class DBControl {
 
 	public int savePoll(Branch branch, Poll poll) throws SQLException {
 		
-		String query = SAVE_POLL + branch.getId() + ",'" + poll.getPollName() + "'," + poll.getFxml() + ")";
-		System.out.println(query);
+		String query = SAVE_POLL + poll.getId() + "," + branch.getId() + ",'" + poll.getPollName() + "'," + poll.getFxml() + ")";
 		Configuration config = Configuration.getInstance();
 		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
 		Statement statement = connection.createStatement();
@@ -425,6 +426,28 @@ public class DBControl {
 		for(int i=1; i<answers.length;i++) {
 			query+= ",(null," + table.getId() + ",'" + answers[i].getAnswer() + "'," + answers[i].getValue() +")";
 		}		System.out.println(query);
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		statement.execute(query);
+		connection.close();
+	}
+
+	public void saveInputs(Poll poll, Input input) throws SQLException {
+		int pollID = poll.getId();
+		String query = SAVE_INPUT +  pollID + ",'" + input.getQuestion() + "')";
+		System.out.println(query);
+		Configuration config = Configuration.getInstance();
+		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
+		Statement statement = connection.createStatement();
+		statement.execute(query);
+		connection.close();
+	}
+
+
+	//DELETE METHODS
+	public void deletePoll(Poll poll) throws SQLException {
+		String query = DELETE_POLL + poll.getId();
 		Configuration config = Configuration.getInstance();
 		Connection connection = DriverManager.getConnection(url,config.getMySQLUser(),config.getMySQLPass());
 		Statement statement = connection.createStatement();

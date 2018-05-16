@@ -32,7 +32,9 @@ public class MainController extends Application{
 	public void start(Stage stage) throws Exception {
 		EntityManager em = EntityManager.getInstance();
 		em.loadBranches();
+		
 		em.setBranch(em.getBranches()[0]);
+		em.loadPolls();
 		EditorControl edit = new EditorControl();
 		edit.generateHandlers();
 		edit.show();

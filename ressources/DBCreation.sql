@@ -71,7 +71,7 @@ create table polltables(
 	pollID smallint,
 	tableTitle varchar(300),
 	
-	foreign key(pollID) references polls(pollID),
+	foreign key(pollID) references polls(pollID) on delete cascade,
 	primary key(tableID,pollID)
 )
 character set=utf8
@@ -83,7 +83,7 @@ create table pollinputs(
 	pollID smallint,
 	inputQuestion varchar(300),
 	
-	foreign key(pollID) references polls(pollID),
+	foreign key(pollID) references polls(pollID) on delete cascade,
 	primary key(inputID, pollID)
 )
 character set=utf8
@@ -95,7 +95,7 @@ create table tablequestions(
 	tableID smallint,
 	question varchar(300),
 	
-	foreign key(tableID) references polltables(tableID),
+	foreign key(tableID) references polltables(tableID) on delete cascade,
 	primary key(questionID)
 )
 character set=utf8
@@ -108,7 +108,7 @@ create table tableanswers(
 	answer varchar(300),
 	value smallint,
 	
-	foreign key(tableID) references polltables(tableID),
+	foreign key(tableID) references polltables(tableID) on delete cascade,
 	primary key(answerID)
 )
 character set=utf8
